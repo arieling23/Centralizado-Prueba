@@ -16,8 +16,8 @@ jobs:
 
     - name: Build & Push Docker image
       run: |
-        docker build -t arieling/todo-centralizada .
-        docker push arieling/todo-centralizada
+        docker build -t arieling/centralizada-app .
+        docker push arieling/centralizada-app
 
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v0.1.6
@@ -26,6 +26,6 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_KEY }}
         script: |
-          docker pull arieling/todo-centralizada
+          docker pull arieling/centralizada-app
           docker stop todo || true && docker rm todo || true
-          docker run -d -p 80:3000 --name todo arieling/todo-centralizada
+          docker run -d -p 80:3000 --name todo arieling/centralizada-app
