@@ -1,30 +1,36 @@
-name: Deploy Centralizada App
+name: Desplegar aplicación Centralizada
+
+# Ejecutar este flujo de trabajo cuando se haga push a la rama master
 on:
   push:
     branches: [master]
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # El runner de GitHub seguirá siendo Ubuntu
 
     steps:
-    - name: Checkout code
+    # Paso 1: Clonar el código del repositorio
+    - name: Descargar código del repositorio
       uses: actions/checkout@v2
 
-    - name: Login to Docker Hub
+    # Paso 2: Iniciar sesión en Docker Hub usando los secrets
+    - name: Iniciar sesión en Docker Hub
       run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-    - name: Build & Push Docker image
+    # Paso 3: Construir la imagen Docker y subirla a Docker Hub
+    - name: Construir y subir imagen Docker
       run: |
         docker build -t arieling/centralizada-app .
         docker push arieling/centralizada-app
 
-    - name: Deploy to EC2
+    # Paso 4: Conectarse a EC2 vía SSH y desplegar el contenedor
+    - name: Desplegar en EC2
       uses: appleboy/ssh-action@v0.1.6
       with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_KEY }}
+        host: ${{ secrets.EC2_HOST }}       # Dirección IP pública de la instancia EC2
+        username: ec2-user                  # Usuario correcto para Amazon Linux
+        key: ${{ secrets.EC2_KEY }}         # Contenido del archivo .pem
         script: |
           docker pull arieling/centralizada-app
           docker stop todo || true && docker rm todo || true
