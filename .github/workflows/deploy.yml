@@ -1,0 +1,31 @@
+name: Deploy Centralizada App
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Login to Docker Hub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    - name: Build & Push Docker image
+      run: |
+        docker build -t arieling/todo-centralizada .
+        docker push arieling/todo-centralizada
+
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          docker pull arieling/todo-centralizada
+          docker stop todo || true && docker rm todo || true
+          docker run -d -p 80:3000 --name todo arieling/todo-centralizada

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head><title>ToDo List</title></head>
+<body>
+  <h1>Lista de Tareas</h1>
+  <input id="tarea" type="text" />
+  <button onclick="agregar()">Agregar</button>
+  <ul id="lista"></ul>
+
+  <script>
+    function cargar() {
+      fetch('/api/tareas')
+        .then(res => res.json())
+        .then(data => {
+          const ul = document.getElementById('lista');
+          ul.innerHTML = '';
+          data.forEach(t => {
+            const li = document.createElement('li');
+            li.textContent = t.descripcion;
+            ul.appendChild(li);
+          });
+        });
+    }
+
+    function agregar() {
+      const descripcion = document.getElementById('tarea').value;
+      fetch('/api/tareas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ descripcion })
+      }).then(() => {
+        document.getElementById('tarea').value = '';
+        cargar();
+      });
+    }
+
+    cargar();
+  </script>
+</body>
+</html>
