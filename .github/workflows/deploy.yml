@@ -1,7 +1,7 @@
 name: Deploy Centralizada App
 on:
   push:
-    branches: [main]
+    branches: [master]
 
 jobs:
   deploy:
